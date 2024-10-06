@@ -176,7 +176,7 @@ MU_TEST(test_insert_str_line_data)
 	char buffer[] = "hello";
 	char buffer2[] = "hello";
 
-	line_data_t* ld = str_to_line_data(buffer);
+	line_data_t *ld = str_to_line_data(buffer);
 
 	mu_check(ld != NULL);
 	mu_check(ld->capacity == 5);
@@ -202,14 +202,14 @@ MU_TEST(test_copy_line_data)
 {
 	char buffer[] = "hello";
 
-	line_data_t* ld = str_to_line_data(buffer);
+	line_data_t *ld = str_to_line_data(buffer);
 
 	mu_check(ld != NULL);
 	mu_check(ld->capacity == 5);
 	mu_check(ld->len == 5);
 	mu_assert_string_eq(buffer, ld->line_contents);
 
-	line_data_t* newline = copy_line_data(ld);
+	line_data_t *newline = copy_line_data(ld);
 	mu_check(newline != NULL);
 	mu_check(ld->capacity == 5);
 	mu_check(ld->len == 5);
@@ -217,8 +217,8 @@ MU_TEST(test_copy_line_data)
 
 	free_line_data(ld);
 	free_line_data(newline);
-	
-	line_data_t* null_line = copy_line_data(NULL);
+
+	line_data_t *null_line = copy_line_data(NULL);
 	mu_check(null_line == NULL);
 }
 
@@ -237,9 +237,9 @@ MU_TEST_SUITE(test_ld_suite)
 MU_TEST(test_free_line)
 {
 	free_line(NULL);
-	line_t* half_empty = calloc(1, sizeof(line_t));
+	line_t *half_empty = calloc(1, sizeof(line_t));
 	free_line(half_empty);
-	line_t* empty = empty_line();
+	line_t *empty = empty_line();
 	free_line(empty);
 }
 
@@ -260,10 +260,60 @@ MU_TEST(test_empty_line)
 	free_line(empty);
 }
 
+MU_TEST(test_str_to_line)
+{
+	char buffer[] = "hello";
+	line_t *non_empty = str_to_line(buffer);
+	mu_check(non_empty != NULL);
+	mu_check(non_empty->data != NULL);
+	mu_assert_string_eq(non_empty->data->line_contents, buffer);
+	free_line(non_empty);
+}
+
+MU_TEST(test_insert_line)
+{
+	char buffer[] = "hello";
+	char buffer2[] = "hello2";
+	char buffer3[] = "hello3";
+
+	line_t *first = str_to_line(buffer);
+	line_t *second = str_to_line(buffer2);
+	line_t *third = str_to_line(buffer3);
+
+	int status = insert_line(first, third);
+
+	mu_check(status == 0);
+	mu_check(first->next == third);
+	mu_check(third->prev == first);
+
+	status = insert_line(first, second);
+
+	mu_check(status == 0);
+	mu_check(first->next == second);
+	mu_check(second->prev == first);
+	mu_check(second->next == third);
+	mu_check(third->prev == second);
+
+	status = insert_line(first, NULL);
+	mu_check(status != 0);
+
+	status = insert_line(first, second);
+	mu_check(status != 0);
+
+	status = insert_line(NULL, second);
+	mu_check(status != 0);
+
+	free_line(first);
+	free_line(second);
+	free_line(third);
+}
+
 MU_TEST_SUITE(test_line_suite)
 {
 	MU_RUN_TEST(test_free_line);
 	MU_RUN_TEST(test_empty_line);
+	MU_RUN_TEST(test_str_to_line);
+	MU_RUN_TEST(test_insert_line);
 }
 
 int main(int argc, char *argv[])

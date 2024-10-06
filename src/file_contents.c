@@ -221,3 +221,43 @@ void free_line(line_t* line)
 
     free(line);
 }
+
+line_t *str_to_line(char *str)
+{
+    line_t *line = empty_line();
+    int status = insert_str_line_data(line->data, line->data->len, str);
+    if (status != 0)
+    {
+        free_line(line);
+        return NULL;
+    }
+    return line;
+}
+
+int insert_line(line_t* line, line_t* to_insert)
+{
+    if (line == NULL || to_insert == NULL)
+    {
+        return -1;
+    }
+    if (to_insert->next != NULL || to_insert->prev != NULL)
+    {
+        return -1;
+    }
+
+    if (line->next == NULL)
+    {
+        line->next = to_insert;
+        to_insert->prev = line;
+        return 0;
+    }
+    else
+    {
+        line_t* third = line->next;
+        to_insert->next = third;
+        to_insert->prev = line;
+        third->prev = to_insert;
+        line->next = to_insert;
+        return 0;
+    }
+}
