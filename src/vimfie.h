@@ -4,7 +4,7 @@
 
 typedef struct
 {
-    file_content_t *contents;
+    line_t *contents;
     pointer_t *cursor;
     char* command;
 } vimfie_t;

@@ -14,9 +14,9 @@ int resize_line_data(line_data_t *ld, int new_size);
 int standard_upsize_line_data(line_data_t *ld, int minimum_new_size);
 int insert_char_line_data(line_data_t *ld, int index, char c);
 
-typedef struct file_content_t
+typedef struct line_t
 {
     line_data_t *data;
-    struct file_content_t *prev;
-    struct file_content_t *next;
-} file_content_t;
+    struct line_t *prev;
+    struct line_t *next;
+} line_t;
