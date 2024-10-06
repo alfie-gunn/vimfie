@@ -20,3 +20,6 @@ typedef struct line_t
     struct line_t *prev;
     struct line_t *next;
 } line_t;
+
+line_t* empty_line();
+void free_line(line_t* line);

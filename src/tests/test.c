@@ -3,6 +3,15 @@
 #include "minunit.h"
 #include "../file_contents.h"
 
+MU_TEST(test_free_line_data)
+{
+	free_line_data(NULL);
+	line_data_t *half_empty = calloc(1, sizeof(line_data_t));
+	free_line_data(half_empty);
+	line_data_t *empty = empty_line_data();
+	free_line_data(empty);
+}
+
 MU_TEST(test_empty_line_data)
 {
 	line_data_t *empty = empty_line_data();
@@ -164,6 +173,7 @@ MU_TEST(test_insert_char_line_data)
 
 MU_TEST_SUITE(test_ld_suite)
 {
+	MU_RUN_TEST(test_free_line_data);
 	MU_RUN_TEST(test_empty_line_data);
 	MU_RUN_TEST(test_str_to_line_data);
 	MU_RUN_TEST(test_resize_line_data);
@@ -171,9 +181,42 @@ MU_TEST_SUITE(test_ld_suite)
 	MU_RUN_TEST(test_insert_char_line_data);
 }
 
+MU_TEST(test_free_line)
+{
+	free_line(NULL);
+	line_t* half_empty = calloc(1, sizeof(line_t));
+	free_line(half_empty);
+	line_t* empty = empty_line();
+	free_line(empty);
+}
+
+MU_TEST(test_empty_line)
+{
+	line_t *empty = empty_line();
+	mu_check(empty != NULL);
+
+	mu_check(empty->data != NULL);
+	mu_check(empty->data->capacity == 0);
+	mu_check(empty->data->len == 0);
+	mu_check(empty->data->line_contents != NULL);
+	mu_check(empty->data->line_contents[0] == '\0');
+
+	mu_check(empty->next == NULL);
+	mu_check(empty->prev == NULL);
+
+	free_line(empty);
+}
+
+MU_TEST_SUITE(test_line_suite)
+{
+	MU_RUN_TEST(test_free_line);
+	MU_RUN_TEST(test_empty_line);
+}
+
 int main(int argc, char *argv[])
 {
 	MU_RUN_SUITE(test_ld_suite);
+	MU_RUN_SUITE(test_line_suite);
 	MU_REPORT();
 	return MU_EXIT_CODE;
 }

@@ -132,3 +132,36 @@ int insert_char_line_data(line_data_t *ld, int index, char c)
         return 0;
     }
 }
+
+line_t* empty_line()
+{
+    line_t* empty = calloc(1, sizeof(line_t));
+    if (empty == NULL)
+    {
+        return NULL;
+    }
+    empty->data = empty_line_data();
+    if (empty->data == NULL)
+    {
+        free(empty);
+        return NULL;
+    }
+    empty->next = NULL;
+    empty->prev = NULL;
+    return empty;
+}
+
+void free_line(line_t* line)
+{
+    if (line == NULL)
+    {
+        return;
+    }
+
+    if (line->data != NULL)
+    {
+        free_line_data(line->data);
+    }
+
+    free(line);
+}
