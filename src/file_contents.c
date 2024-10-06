@@ -133,6 +133,62 @@ int insert_char_line_data(line_data_t *ld, int index, char c)
     }
 }
 
+int insert_str_line_data(line_data_t *ld, int index, char* str)
+{
+    if (ld == NULL || str == NULL)
+    {
+        return -1;
+    }
+    if (ld->line_contents == NULL)
+    {
+        return -1;
+    }
+
+    int len_str = strlen(str);
+    for (int i = 0; i < len_str; i++)
+    {
+        int status = insert_char_line_data(ld, index+i, str[i]);
+        if (status != 0)
+        {
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+line_data_t *copy_line_data(line_data_t *ld)
+{
+    if (ld == NULL)
+    {
+        return NULL;
+    }
+    if (ld->line_contents == NULL)
+    {
+        return NULL;
+    }
+
+    line_data_t *new_ld = empty_line_data();
+    if (new_ld == NULL)
+    {
+        return NULL;
+    }
+    int status = insert_str_line_data(new_ld, 0, ld->line_contents);
+    if (status != 0)
+    {
+        free_line_data(new_ld);
+        return NULL;
+    }
+    status = resize_line_data(new_ld, ld->capacity);
+    if (status != 0)
+    {
+        free_line_data(new_ld);
+        return NULL;
+    }
+
+    return new_ld;
+}
+
 line_t* empty_line()
 {
     line_t* empty = calloc(1, sizeof(line_t));

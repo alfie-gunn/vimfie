@@ -171,6 +171,57 @@ MU_TEST(test_insert_char_line_data)
 	free_line_data(empty);
 }
 
+MU_TEST(test_insert_str_line_data)
+{
+	char buffer[] = "hello";
+	char buffer2[] = "hello";
+
+	line_data_t* ld = str_to_line_data(buffer);
+
+	mu_check(ld != NULL);
+	mu_check(ld->capacity == 5);
+	mu_check(ld->len == 5);
+	mu_assert_string_eq(buffer, ld->line_contents);
+
+	int status = insert_str_line_data(ld, 1, buffer2);
+	mu_check(status == 0);
+	mu_check(ld->len == 10);
+	mu_check(ld->capacity == 10);
+	mu_assert_string_eq("hhelloello", ld->line_contents);
+
+	status = insert_str_line_data(ld, 1, NULL);
+	mu_check(status != 0);
+
+	free_line_data(ld);
+
+	status = insert_str_line_data(NULL, 1, buffer);
+	mu_check(status != 0);
+}
+
+MU_TEST(test_copy_line_data)
+{
+	char buffer[] = "hello";
+
+	line_data_t* ld = str_to_line_data(buffer);
+
+	mu_check(ld != NULL);
+	mu_check(ld->capacity == 5);
+	mu_check(ld->len == 5);
+	mu_assert_string_eq(buffer, ld->line_contents);
+
+	line_data_t* newline = copy_line_data(ld);
+	mu_check(newline != NULL);
+	mu_check(ld->capacity == 5);
+	mu_check(ld->len == 5);
+	mu_assert_string_eq(ld->line_contents, newline->line_contents);
+
+	free_line_data(ld);
+	free_line_data(newline);
+	
+	line_data_t* null_line = copy_line_data(NULL);
+	mu_check(null_line == NULL);
+}
+
 MU_TEST_SUITE(test_ld_suite)
 {
 	MU_RUN_TEST(test_free_line_data);
@@ -179,6 +230,8 @@ MU_TEST_SUITE(test_ld_suite)
 	MU_RUN_TEST(test_resize_line_data);
 	MU_RUN_TEST(test_standard_resize_line_data);
 	MU_RUN_TEST(test_insert_char_line_data);
+	MU_RUN_TEST(test_insert_str_line_data);
+	MU_RUN_TEST(test_copy_line_data);
 }
 
 MU_TEST(test_free_line)
