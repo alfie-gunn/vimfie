@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdio.h>
+
 typedef struct
 {
     char *line_contents;
@@ -30,5 +32,6 @@ int insert_line(line_t *line, line_t *to_insert);
 char **split_str(char *str, char c, int *return_size);
 void iteratively_free_lines(line_t *head);
 line_t *parse_str_to_lines(char *str);
-int write_line(line_t* line, int fd);
-int write_lines_from_head(line_t* line, int fd);
+int write_line(line_t *line, int fd);
+int write_lines_from_head(line_t *line, int fd);
+line_t *parse_file_to_lines(FILE *file);

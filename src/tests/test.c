@@ -436,6 +436,25 @@ MU_TEST(test_write_lines_from_head)
 	mu_assert_string_eq(firstbuf, secondbuf);
 }
 
+MU_TEST(test_parse_file_to_lines)
+{
+	FILE *file = fopen("testfile", "r");
+	mu_assert(file != NULL, "Expected file non-null, found NULL");
+
+	line_t *head = parse_file_to_lines(file);
+	mu_assert(head != NULL, "Expected head non-null, found NULL");
+
+	mu_assert_string_eq("this is a test file", head->data->line_contents);
+	mu_assert_string_eq("it is used for testing", head->next->data->line_contents);
+	mu_assert_string_eq("do not touch!", head->next->next->data->line_contents);
+
+	iteratively_free_lines(head);
+	fclose(file);
+
+	head = parse_file_to_lines(NULL);
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)head);
+}
+
 MU_TEST_SUITE(test_line_suite)
 {
 	MU_RUN_TEST(test_free_line);
@@ -447,6 +466,7 @@ MU_TEST_SUITE(test_line_suite)
 	MU_RUN_TEST(test_parse_str_to_lines);
 	MU_RUN_TEST(test_write_line);
 	MU_RUN_TEST(test_write_lines_from_head);
+	MU_RUN_TEST(test_parse_file_to_lines);
 }
 
 int main(int argc, char *argv[])

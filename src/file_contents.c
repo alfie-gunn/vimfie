@@ -367,7 +367,7 @@ line_t *parse_str_to_lines(char *str)
     return head;
 }
 
-int write_line(line_t* line, int fd)
+int write_line(line_t *line, int fd)
 {
     if (line == NULL)
     {
@@ -377,7 +377,7 @@ int write_line(line_t* line, int fd)
     return 0;
 }
 
-int write_lines_from_head(line_t* line, int fd)
+int write_lines_from_head(line_t *line, int fd)
 {
     if (line == NULL)
     {
@@ -392,4 +392,29 @@ int write_lines_from_head(line_t* line, int fd)
     }
 
     return 0;
+}
+
+line_t *parse_file_to_lines(FILE *file)
+{
+    if (file == NULL)
+    {
+        return NULL;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
+    rewind(file);
+
+    char *read_buffer = calloc(file_size + 1, sizeof(char));
+    if (read_buffer == NULL)
+    {
+        return NULL;
+    }
+
+    fread(read_buffer, sizeof(char), file_size, file);
+
+    line_t *head = parse_str_to_lines(read_buffer);
+
+    free(read_buffer);
+    return head;
 }
