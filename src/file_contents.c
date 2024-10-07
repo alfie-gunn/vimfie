@@ -1,6 +1,7 @@
 #include "file_contents.h"
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 line_data_t *empty_line_data()
 {
@@ -364,4 +365,31 @@ line_t *parse_str_to_lines(char *str)
     free(strs);
 
     return head;
+}
+
+int write_line(line_t* line, int fd)
+{
+    if (line == NULL)
+    {
+        return -1;
+    }
+    write(fd, line->data->line_contents, line->data->len);
+    return 0;
+}
+
+int write_lines_from_head(line_t* line, int fd)
+{
+    if (line == NULL)
+    {
+        return -1;
+    }
+
+    while (line != NULL)
+    {
+        write_line(line, fd);
+        write(fd, "\n", 1);
+        line = line->next;
+    }
+
+    return 0;
 }

@@ -406,6 +406,35 @@ MU_TEST(test_parse_str_to_lines)
 	iteratively_free_lines(head);
 }
 
+MU_TEST(test_write_line)
+{
+	int fd[2];
+	pipe(fd);
+
+	line_t *head = str_to_line("hello, me!");
+	write_line(head, fd[1]);
+	char *buffer = calloc(20, sizeof(char));
+	read(fd[0], buffer, 19);
+
+	mu_assert_string_eq("hello, me!", buffer);
+	iteratively_free_lines(head);
+}
+
+MU_TEST(test_write_lines_from_head)
+{
+	int fd[2];
+	pipe(fd);
+
+	char firstbuf[] = "hello!\nI am a string of lines!\nGoodbye!\n";
+	line_t *head = parse_str_to_lines(firstbuf);
+	write_lines_from_head(head, fd[1]);
+
+	char *secondbuf = calloc(sizeof(firstbuf), sizeof(char));
+	read(fd[0], secondbuf, sizeof(firstbuf));
+
+	mu_assert_string_eq(firstbuf, secondbuf);
+}
+
 MU_TEST_SUITE(test_line_suite)
 {
 	MU_RUN_TEST(test_free_line);
@@ -415,6 +444,8 @@ MU_TEST_SUITE(test_line_suite)
 	MU_RUN_TEST(test_split_str);
 	MU_RUN_TEST(test_iteratively_free_lines);
 	MU_RUN_TEST(test_parse_str_to_lines);
+	MU_RUN_TEST(test_write_line);
+	MU_RUN_TEST(test_write_lines_from_head);
 }
 
 int main(int argc, char *argv[])
