@@ -455,6 +455,55 @@ MU_TEST(test_parse_file_to_lines)
 	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)head);
 }
 
+MU_TEST(test_write_lines_to_file)
+{
+	FILE *file = fopen("testfile", "a");
+	mu_assert(file != NULL, "Expected file non-null, found NULL");
+
+	line_t *head = parse_str_to_lines("newline!\nnewline!\n");
+	mu_assert(head != NULL, "Expected head non-null, found NULL");
+
+	int status = write_lines_to_file(head, file);
+	mu_assert_int_eq(0, status);
+
+	iteratively_free_lines(head);
+	fclose(file);
+
+	file = fopen("testfile", "r");
+	mu_assert(file != NULL, "Expected file non-null, found NULL");
+	head = parse_file_to_lines(file);
+	mu_assert(head != NULL, "Expected head non-null, found NULL");
+
+	fclose(file);
+
+	mu_assert(head != NULL, "Expected head non-null, found NULL");
+	mu_assert(head->next != NULL, "Expected head->next non-null, found NULL");
+	mu_assert(head->next->next != NULL, "Expected head->next->next non-null, found NULL");
+	mu_assert(head->next->next->next != NULL, "Expected head->next->next->next non-null, found NULL");
+	mu_assert(head->next->next->next->next != NULL, "Expected head->next->next->next->next non-null, found NULL");
+	mu_assert_string_eq("this is a test file", head->data->line_contents);
+	mu_assert_string_eq("it is used for testing", head->next->data->line_contents);
+	mu_assert_string_eq("do not touch!", head->next->next->data->line_contents);
+	mu_assert_string_eq("newline!", head->next->next->next->data->line_contents);
+	mu_assert_string_eq("newline!", head->next->next->next->next->data->line_contents);
+
+	iteratively_free_lines(head);
+
+	fopen("testfile", "w");
+	mu_assert(file != NULL, "Expected file non-null, found NULL");
+
+	head = parse_str_to_lines("this is a test file\nit is used for testing\ndo not touch!\n");
+	mu_assert(head != NULL, "Expected head non-null, found NULL");
+
+
+	status = write_lines_to_file(head, file);
+	mu_assert_int_eq(0, status);
+
+	fclose(file);
+
+	iteratively_free_lines(head);
+}
+
 MU_TEST_SUITE(test_line_suite)
 {
 	MU_RUN_TEST(test_free_line);
@@ -467,6 +516,7 @@ MU_TEST_SUITE(test_line_suite)
 	MU_RUN_TEST(test_write_line);
 	MU_RUN_TEST(test_write_lines_from_head);
 	MU_RUN_TEST(test_parse_file_to_lines);
+	MU_RUN_TEST(test_write_lines_to_file);
 }
 
 int main(int argc, char *argv[])

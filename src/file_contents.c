@@ -418,3 +418,20 @@ line_t *parse_file_to_lines(FILE *file)
     free(read_buffer);
     return head;
 }
+
+int write_lines_to_file(line_t *line, FILE *file)
+{
+    if (line == NULL || file == NULL)
+    {
+        return -1;
+    }
+
+    while (line != NULL)
+    {
+        fwrite(line->data->line_contents, sizeof(char), line->data->len, file);
+        fwrite("\n", sizeof(char), 1, file);
+        line = line->next;
+    }
+
+    return 0;
+}
