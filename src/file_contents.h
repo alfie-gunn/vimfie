@@ -27,3 +27,6 @@ line_t *empty_line();
 void free_line(line_t *line);
 line_t *str_to_line(char *str);
 int insert_line(line_t *line, line_t *to_insert);
+char **split_str(char *str, char c, int *return_size);
+void iteratively_free_lines(line_t *head);
+line_t *parse_str_to_lines(char *str);

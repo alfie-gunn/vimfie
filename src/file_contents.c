@@ -133,7 +133,7 @@ int insert_char_line_data(line_data_t *ld, int index, char c)
     }
 }
 
-int insert_str_line_data(line_data_t *ld, int index, char* str)
+int insert_str_line_data(line_data_t *ld, int index, char *str)
 {
     if (ld == NULL || str == NULL)
     {
@@ -147,7 +147,7 @@ int insert_str_line_data(line_data_t *ld, int index, char* str)
     int len_str = strlen(str);
     for (int i = 0; i < len_str; i++)
     {
-        int status = insert_char_line_data(ld, index+i, str[i]);
+        int status = insert_char_line_data(ld, index + i, str[i]);
         if (status != 0)
         {
             return -1;
@@ -189,9 +189,9 @@ line_data_t *copy_line_data(line_data_t *ld)
     return new_ld;
 }
 
-line_t* empty_line()
+line_t *empty_line()
 {
-    line_t* empty = calloc(1, sizeof(line_t));
+    line_t *empty = calloc(1, sizeof(line_t));
     if (empty == NULL)
     {
         return NULL;
@@ -207,7 +207,7 @@ line_t* empty_line()
     return empty;
 }
 
-void free_line(line_t* line)
+void free_line(line_t *line)
 {
     if (line == NULL)
     {
@@ -234,7 +234,7 @@ line_t *str_to_line(char *str)
     return line;
 }
 
-int insert_line(line_t* line, line_t* to_insert)
+int insert_line(line_t *line, line_t *to_insert)
 {
     if (line == NULL || to_insert == NULL)
     {
@@ -253,11 +253,115 @@ int insert_line(line_t* line, line_t* to_insert)
     }
     else
     {
-        line_t* third = line->next;
+        line_t *third = line->next;
         to_insert->next = third;
         to_insert->prev = line;
         third->prev = to_insert;
         line->next = to_insert;
         return 0;
     }
+}
+
+char **split_str(char *str, char c, int *return_size)
+{
+    if (str == NULL || return_size == NULL)
+    {
+        return NULL;
+    }
+
+    int len_of_str = strlen(str);
+    if (len_of_str == 0)
+    {
+        return NULL;
+    }
+
+    int counter = 1;
+    for (int i = 0; i < len_of_str; i++)
+    {
+        if (str[i] == c)
+        {
+            counter++;
+        }
+    }
+
+    char **return_array = calloc(counter, sizeof(char *));
+    counter = 0;
+    int last = 0;
+    for (int i = 0; i < len_of_str; i++)
+    {
+        if (str[i] == c || i == len_of_str - 1)
+        {
+            int current_str_len = i - last + 1;
+            char *current_str = calloc(current_str_len + 1, sizeof(char));
+            memcpy(current_str, str + last, current_str_len);
+            return_array[counter] = current_str;
+            last = i + 1;
+            counter++;
+        }
+    }
+
+    *return_size = counter;
+    return return_array;
+}
+
+void iteratively_free_lines(line_t *head)
+{
+    if (head == NULL)
+    {
+        return;
+    }
+    if (head->next != NULL)
+    {
+        iteratively_free_lines(head->next);
+    }
+    free_line(head);
+}
+
+line_t *parse_str_to_lines(char *str)
+{
+    if (str == NULL)
+    {
+        return NULL;
+    }
+
+    int len_of_str = strlen(str);
+    if (len_of_str == 0)
+    {
+        return NULL;
+    }
+
+    int return_size = 0;
+    char **strs = split_str(str, '\n', &return_size);
+    if (strs == NULL)
+    {
+        return NULL;
+    }
+
+    if (strs[0][strlen(strs[0]) - 1] == '\n')
+    {
+        strs[0][strlen(strs[0]) - 1] = '\0';
+    }
+
+    line_t *head = str_to_line(strs[0]);
+    line_t *current = head;
+
+    for (int i = 1; i < return_size; i++)
+    {
+        if (strs[i][strlen(strs[i]) - 1] == '\n')
+        {
+            strs[i][strlen(strs[i]) - 1] = '\0';
+        }
+
+        line_t *new_line = str_to_line(strs[i]);
+        insert_line(current, new_line);
+        current = new_line;
+    }
+
+    for (int i = 0; i < return_size; i++)
+    {
+        free(strs[i]);
+    }
+    free(strs);
+
+    return head;
 }

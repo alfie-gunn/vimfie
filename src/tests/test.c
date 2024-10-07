@@ -308,12 +308,113 @@ MU_TEST(test_insert_line)
 	free_line(third);
 }
 
+MU_TEST(test_split_str)
+{
+	char buffer[] = "hello";
+	int return_size = 0;
+	char **test_array = split_str(buffer, '\n', &return_size);
+	mu_assert_int_eq(1, return_size);
+	mu_assert_string_eq(buffer, test_array[0]);
+	free(test_array[0]);
+	free(test_array);
+
+	char buffer2[] = "hello\nhello";
+	return_size = 0;
+	test_array = split_str(buffer2, '\n', &return_size);
+	mu_assert_int_eq(2, return_size);
+	mu_assert_string_eq("hello\n", test_array[0]);
+	mu_assert_string_eq("hello", test_array[1]);
+	free(test_array[0]);
+	free(test_array[1]);
+	free(test_array);
+
+	char buffer3[] = "hello\n\nhello\nhello";
+	return_size = 0;
+	test_array = split_str(buffer3, '\n', &return_size);
+	mu_assert_int_eq(4, return_size);
+	mu_assert_string_eq("hello\n", test_array[0]);
+	mu_assert_string_eq("\n", test_array[1]);
+	mu_assert_string_eq("hello\n", test_array[2]);
+	mu_assert_string_eq("hello", test_array[3]);
+	free(test_array[0]);
+	free(test_array[1]);
+	free(test_array[2]);
+	free(test_array[3]);
+	free(test_array);
+
+	return_size = 0;
+	test_array = split_str(NULL, '\n', &return_size);
+	mu_check(test_array == NULL);
+	mu_check(return_size == 0);
+
+	return_size = 0;
+	test_array = split_str(buffer3, '\n', NULL);
+	mu_check(test_array == NULL);
+	mu_check(return_size == 0);
+
+	return_size = 0;
+	test_array = split_str("", '\n', &return_size);
+	mu_check(test_array == NULL);
+	mu_check(return_size == 0);
+}
+
+MU_TEST(test_iteratively_free_lines)
+{
+	line_t *third = str_to_line("third");
+	line_t *second = str_to_line("second");
+	line_t *head = str_to_line("head");
+
+	insert_line(head, second);
+	insert_line(second, third);
+
+	iteratively_free_lines(head);
+}
+
+MU_TEST(test_parse_str_to_lines)
+{
+	char buffer[] = "hello";
+	line_t *head = parse_str_to_lines(buffer);
+	mu_check(head != NULL);
+	mu_check(head->prev == NULL);
+	mu_check(head->next == NULL);
+	mu_assert_string_eq(buffer, head->data->line_contents);
+	free_line(head);
+
+	char buffer2[] = "hello2\nhello";
+	head = parse_str_to_lines(buffer2);
+	mu_check(head != NULL);
+	mu_check(head->next != NULL);
+	mu_check(head->next->next == NULL);
+	mu_check(head->prev == NULL);
+	mu_assert_string_eq("hello2", head->data->line_contents);
+	mu_assert_string_eq("hello", head->next->data->line_contents);
+	iteratively_free_lines(head);
+
+	char buffer3[] = "head!\nsecond!\n\nfourth!\n";
+	head = parse_str_to_lines(buffer3);
+	mu_check(head != NULL);
+	mu_check(head->next != NULL);
+	mu_check(head->next->next != NULL);
+	mu_check(head->next->next->next != NULL);
+	mu_check(head->next->next->next->next == NULL);
+
+	mu_assert_string_eq("head!", head->data->line_contents);
+	mu_assert_string_eq("second!", head->next->data->line_contents);
+	mu_assert_string_eq("", head->next->next->data->line_contents);
+	mu_assert_string_eq("fourth!", head->next->next->next->data->line_contents);
+
+	iteratively_free_lines(head);
+}
+
 MU_TEST_SUITE(test_line_suite)
 {
 	MU_RUN_TEST(test_free_line);
 	MU_RUN_TEST(test_empty_line);
 	MU_RUN_TEST(test_str_to_line);
 	MU_RUN_TEST(test_insert_line);
+	MU_RUN_TEST(test_split_str);
+	MU_RUN_TEST(test_iteratively_free_lines);
+	MU_RUN_TEST(test_parse_str_to_lines);
 }
 
 int main(int argc, char *argv[])
