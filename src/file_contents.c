@@ -435,3 +435,17 @@ int write_lines_to_file(line_t *line, FILE *file)
 
     return 0;
 }
+
+void display_n_lines(line_t *line, int n)
+{
+    if (line == NULL)
+    {
+        return;
+    }
+
+    for (int i = 0; i < n && line != NULL; i++)
+    {
+        printf("%s\n", line->data->line_contents);
+        line = line->next;
+    }
+}

@@ -4,6 +4,7 @@
 #include "minunit.h"
 #include "../file_contents.h"
 #include "../cursor.h"
+#include "../vimfie.h"
 
 MU_TEST(test_free_line_data)
 {
@@ -548,7 +549,7 @@ MU_TEST(test_cursor_updates)
 
 	status = update_x(cursor, 25);
 	mu_assert_int_eq(-1, status);
-	mu_assert_int_eq(10, cursor->x);
+	mu_assert_int_eq(20, cursor->x);
 
 	status = update_y(cursor, 10);
 	mu_assert_int_eq(0, status);
@@ -565,11 +566,36 @@ MU_TEST_SUITE(test_cursor_suite)
 	MU_RUN_TEST(test_cursor_updates);
 }
 
+MU_TEST(test_new_vimfie)
+{
+	vimfie_t *vf = new_vimfie(NULL);
+	mu_assert(vf != NULL, "Expected vf non-null, found NULL");
+	mu_assert(vf->command != NULL, "Expected vf->command non-null, found NULL");
+	mu_assert(vf->cursor != NULL, "Expected vf->cursor non-null, found NULL");
+	mu_assert(vf->head != NULL, "Expected vf->cursor non-null, found NULL");
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)vf->filename);
+	free_vimfie(vf);
+
+	vf = new_vimfie("testfile");
+	mu_assert(vf != NULL, "Expected vf non-null, found NULL");
+	mu_assert(vf->command != NULL, "Expected vf->command non-null, found NULL");
+	mu_assert(vf->cursor != NULL, "Expected vf->cursor non-null, found NULL");
+	mu_assert(vf->head != NULL, "Expected vf->cursor non-null, found NULL");
+	mu_assert_string_eq("testfile", vf->filename);
+	free_vimfie(vf);
+}
+
+MU_TEST_SUITE(test_vf_suite)
+{
+	MU_RUN_TEST(test_new_vimfie);
+}
+
 int main(int argc, char *argv[])
 {
 	MU_RUN_SUITE(test_ld_suite);
 	MU_RUN_SUITE(test_line_suite);
 	MU_RUN_SUITE(test_cursor_suite);
+	MU_RUN_SUITE(test_vf_suite);
 	MU_REPORT();
 	return MU_EXIT_CODE;
 }

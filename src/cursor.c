@@ -27,8 +27,14 @@ cursor_t *new_cursor(int x_bound, int y_bound)
 
 int update_x(cursor_t *cursor, int new_x)
 {
-    if (new_x < 1 || new_x > cursor->x_bound)
+    if (new_x < 1)
     {
+        cursor->x = 1;
+        return -1;
+    }
+    if (new_x > cursor->x_bound)
+    {
+        cursor->x = cursor->x_bound;
         return -1;
     }
     cursor->x = new_x;
@@ -45,14 +51,20 @@ int update_y(cursor_t *cursor, int new_y)
     return 0;
 }
 
-void move_cursor(int x, int y)
+void move_cursor(cursor_t *cursor)
 {
-    printf("\033[%d;%dH", x, y);
+    if (cursor == NULL)
+    {
+        return;
+    }
+    printf("\033[%d;%dH", cursor->y, cursor->x);
+    fflush(stdout);
 }
 
 void slide_cursor(int x, int y)
 {
     printf("\033[%dC\033[%dB", x, y);
+    fflush(stdout);
 }
 
 cursor_t *new_bounded_cursor()
