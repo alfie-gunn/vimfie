@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "minunit.h"
 #include "../file_contents.h"
@@ -15,7 +16,7 @@ MU_TEST(test_free_line_data)
 MU_TEST(test_empty_line_data)
 {
 	line_data_t *empty = empty_line_data();
-	mu_check(empty->len == 0);
+	mu_assert_int_eq(0, empty->len);
 	free_line_data(empty);
 }
 
@@ -23,12 +24,12 @@ MU_TEST(test_str_to_line_data)
 {
 	char buffer[] = "hello";
 	line_data_t *ld = str_to_line_data(buffer);
-	mu_check(ld->len == 5);
-	mu_check(ld->capacity == 5);
+	mu_assert_int_eq(5, ld->len);
+	mu_assert_int_eq(5, ld->capacity);
 	mu_assert_string_eq(buffer, ld->line_contents);
 	free_line_data(ld);
 	ld = str_to_line_data(NULL);
-	mu_check(ld == NULL);
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)ld);
 }
 
 MU_TEST(test_resize_line_data)
@@ -36,34 +37,34 @@ MU_TEST(test_resize_line_data)
 	// Double check str_to_line_data works
 	char buffer[] = "hello";
 	line_data_t *ld = str_to_line_data(buffer);
-	mu_check(ld->len == 5);
-	mu_check(ld->capacity == 5);
+	mu_assert_int_eq(5, ld->len);
+	mu_assert_int_eq(5, ld->capacity);
 	mu_assert_string_eq(buffer, ld->line_contents);
 
 	// Resize to double, check values
 	int status = resize_line_data(ld, 10);
-	mu_check(status == 0);
-	mu_check(ld->len == 5);
-	mu_check(ld->capacity == 10);
+	mu_assert_int_eq(0, status);
+	mu_assert_int_eq(5, ld->len);
+	mu_assert_int_eq(10, ld->capacity);
 	mu_assert_string_eq(buffer, ld->line_contents);
 
 	// Resize back to original, check values
 	status = resize_line_data(ld, 5);
-	mu_check(status == 0);
-	mu_check(ld->len == 5);
-	mu_check(ld->capacity == 5);
+	mu_assert_int_eq(0, status);
+	mu_assert_int_eq(5, ld->len);
+	mu_assert_int_eq(5, ld->capacity);
 	mu_assert_string_eq(buffer, ld->line_contents);
 
 	// Resize to smaller, confirm no changes
 	status = resize_line_data(ld, 4);
-	mu_check(status != 0);
-	mu_check(ld->len == 5);
-	mu_check(ld->capacity == 5);
+	mu_assert_int_eq(-1, status);
+	mu_assert_int_eq(5, ld->len);
+	mu_assert_int_eq(5, ld->capacity);
 	mu_assert_string_eq(buffer, ld->line_contents);
 
 	// Resize null, confirm proper handling
 	status = resize_line_data(NULL, 10);
-	mu_check(status != 0);
+	mu_assert_int_eq(-1, status);
 
 	free_line_data(ld);
 }
@@ -73,33 +74,33 @@ MU_TEST(test_standard_resize_line_data)
 	// Double check str_to_line_data works
 	char buffer[] = "hello";
 	line_data_t *ld = str_to_line_data(buffer);
-	mu_check(ld->len == 5);
-	mu_check(ld->capacity == 5);
+	mu_assert_int_eq(5, ld->len);
+	mu_assert_int_eq(5, ld->capacity);
 	mu_assert_string_eq(buffer, ld->line_contents);
 
 	// Resize to less than double, expect double resize
 	int status = standard_upsize_line_data(ld, 3);
-	mu_check(status == 0);
-	mu_check(ld->len == 5);
-	mu_check(ld->capacity == 10);
+	mu_assert_int_eq(0, status);
+	mu_assert_int_eq(5, ld->len);
+	mu_assert_int_eq(10, ld->capacity);
 	mu_assert_string_eq(buffer, ld->line_contents);
 
 	// Resize to more than double, expect specific resize
 	status = standard_upsize_line_data(ld, 15);
-	mu_check(status == 0);
-	mu_check(ld->len == 5);
-	mu_check(ld->capacity == 25);
+	mu_assert_int_eq(0, status);
+	mu_assert_int_eq(5, ld->len);
+	mu_assert_int_eq(25, ld->capacity);
 	mu_assert_string_eq(buffer, ld->line_contents);
 
 	// Resize a null pointer
 	status = standard_upsize_line_data(NULL, 5);
-	mu_check(status != 0);
+	mu_assert_int_eq(-1, status);
 
 	// Resize to negative "extra"
 	status = standard_upsize_line_data(ld, -5);
-	mu_check(status != 0);
-	mu_check(ld->len == 5);
-	mu_check(ld->capacity == 25);
+	mu_assert_int_eq(-1, status);
+	mu_assert_int_eq(5, ld->len);
+	mu_assert_int_eq(25, ld->capacity);
 	mu_assert_string_eq(buffer, ld->line_contents);
 
 	free_line_data(ld);
@@ -110,62 +111,62 @@ MU_TEST(test_insert_char_line_data)
 	// Double check str_to_line_data works
 	char buffer[] = "hello";
 	line_data_t *ld = str_to_line_data(buffer);
-	mu_check(ld->len == 5);
-	mu_check(ld->capacity == 5);
+	mu_assert_int_eq(5, ld->len);
+	mu_assert_int_eq(5, ld->capacity);
 	mu_assert_string_eq(buffer, ld->line_contents);
 
 	// Insert at end
 	int status = insert_char_line_data(ld, 5, 'f');
-	mu_check(status == 0);
-	mu_check(ld->len == 6);
-	mu_check(ld->capacity == 10);
+	mu_assert_int_eq(0, status);
+	mu_assert_int_eq(6, ld->len);
+	mu_assert_int_eq(10, ld->capacity);
 	mu_assert_string_eq("hellof", ld->line_contents);
 
 	// Insert at in middle
 	status = insert_char_line_data(ld, 3, 'f');
-	mu_check(status == 0);
-	mu_check(ld->len == 7);
-	mu_check(ld->capacity == 10);
+	mu_assert_int_eq(0, status);
+	mu_assert_int_eq(7, ld->len);
+	mu_assert_int_eq(10, ld->capacity);
 	mu_assert_string_eq("helflof", ld->line_contents);
 
 	// Insert at start
 	status = insert_char_line_data(ld, 0, 'f');
-	mu_check(status == 0);
-	mu_check(ld->len == 8);
-	mu_check(ld->capacity == 10);
+	mu_assert_int_eq(0, status);
+	mu_assert_int_eq(8, ld->len);
+	mu_assert_int_eq(10, ld->capacity);
 	mu_assert_string_eq("fhelflof", ld->line_contents);
 
 	// Insert to negative index
 	status = insert_char_line_data(ld, -1, 'f');
-	mu_check(status != 0);
-	mu_check(ld->len == 8);
-	mu_check(ld->capacity == 10);
+	mu_assert_int_eq(-1, status);
+	mu_assert_int_eq(8, ld->len);
+	mu_assert_int_eq(10, ld->capacity);
 	mu_assert_string_eq("fhelflof", ld->line_contents);
 
 	// Insert to oob index
 	status = insert_char_line_data(ld, 9, 'f');
-	mu_check(status != 0);
-	mu_check(ld->len == 8);
-	mu_check(ld->capacity == 10);
+	mu_assert_int_eq(-1, status);
+	mu_assert_int_eq(8, ld->len);
+	mu_assert_int_eq(10, ld->capacity);
 	mu_assert_string_eq("fhelflof", ld->line_contents);
 
 	// Insert to null
 	status = insert_char_line_data(NULL, 0, 'f');
-	mu_check(status != 0);
+	mu_assert_int_eq(-1, status);
 
 	free_line_data(ld);
 
 	line_data_t *empty = empty_line_data();
-	mu_check(empty != NULL);
-	mu_check(empty->line_contents != NULL);
-	mu_check(empty->len == 0);
-	mu_check(empty->capacity == 0);
-	mu_check(empty->line_contents[0] == '\0');
+	mu_assert(empty != NULL, "Expected empty non-null, found NULL");
+	mu_assert(empty->line_contents != NULL, "Expected empty->line_contents non-null, found NULL");
+	mu_assert_int_eq(0, ld->len);
+	mu_assert_int_eq(0, ld->capacity);
+	mu_assert_int_eq((char)0, empty->line_contents[0]);
 
 	status = insert_char_line_data(empty, 0, 'h');
-	mu_check(status == 0);
-	mu_check(empty->len == 1);
-	mu_check(empty->capacity == 1);
+	mu_assert_int_eq(0, status);
+	mu_assert_int_eq(1, ld->len);
+	mu_assert_int_eq(1, ld->capacity);
 	mu_assert_string_eq("h", empty->line_contents);
 
 	free_line_data(empty);
@@ -178,24 +179,24 @@ MU_TEST(test_insert_str_line_data)
 
 	line_data_t *ld = str_to_line_data(buffer);
 
-	mu_check(ld != NULL);
-	mu_check(ld->capacity == 5);
-	mu_check(ld->len == 5);
+	mu_assert(ld != NULL, "Expected ld non-null, found NULL");
+	mu_assert_int_eq(5, ld->len);
+	mu_assert_int_eq(5, ld->capacity);
 	mu_assert_string_eq(buffer, ld->line_contents);
 
 	int status = insert_str_line_data(ld, 1, buffer2);
-	mu_check(status == 0);
-	mu_check(ld->len == 10);
-	mu_check(ld->capacity == 10);
+	mu_assert_int_eq(0, status);
+	mu_assert_int_eq(10, ld->len);
+	mu_assert_int_eq(10, ld->capacity);
 	mu_assert_string_eq("hhelloello", ld->line_contents);
 
 	status = insert_str_line_data(ld, 1, NULL);
-	mu_check(status != 0);
+	mu_assert_int_eq(-1, status);
 
 	free_line_data(ld);
 
 	status = insert_str_line_data(NULL, 1, buffer);
-	mu_check(status != 0);
+	mu_assert_int_eq(-1, status);
 }
 
 MU_TEST(test_copy_line_data)
@@ -204,22 +205,22 @@ MU_TEST(test_copy_line_data)
 
 	line_data_t *ld = str_to_line_data(buffer);
 
-	mu_check(ld != NULL);
-	mu_check(ld->capacity == 5);
-	mu_check(ld->len == 5);
+	mu_assert(ld != NULL, "Expected ld non-null, found NULL");
+	mu_assert_int_eq(5, ld->len);
+	mu_assert_int_eq(5, ld->capacity);
 	mu_assert_string_eq(buffer, ld->line_contents);
 
 	line_data_t *newline = copy_line_data(ld);
-	mu_check(newline != NULL);
-	mu_check(ld->capacity == 5);
-	mu_check(ld->len == 5);
+	mu_assert(newline != NULL, "Expected newline non-null, found NULL");
+	mu_assert_int_eq(5, ld->len);
+	mu_assert_int_eq(5, ld->capacity);
 	mu_assert_string_eq(ld->line_contents, newline->line_contents);
 
 	free_line_data(ld);
 	free_line_data(newline);
 
 	line_data_t *null_line = copy_line_data(NULL);
-	mu_check(null_line == NULL);
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)null_line);
 }
 
 MU_TEST_SUITE(test_ld_suite)
@@ -246,16 +247,16 @@ MU_TEST(test_free_line)
 MU_TEST(test_empty_line)
 {
 	line_t *empty = empty_line();
-	mu_check(empty != NULL);
+	mu_assert(empty != NULL, "Expected empty non-null, found NULL");
 
-	mu_check(empty->data != NULL);
-	mu_check(empty->data->capacity == 0);
-	mu_check(empty->data->len == 0);
-	mu_check(empty->data->line_contents != NULL);
-	mu_check(empty->data->line_contents[0] == '\0');
+	mu_assert(empty->data != NULL, "Expected empty->data non-null, found NULL");
+	mu_assert_int_eq(0, empty->data->capacity);
+	mu_assert_int_eq(0, empty->data->len);
+	mu_assert(empty->data->line_contents != NULL, "Expected empty->data->line_contents non-null, found NULL");
+	mu_assert_int_eq((char)0, empty->data->line_contents[0]);
 
-	mu_check(empty->next == NULL);
-	mu_check(empty->prev == NULL);
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)empty->next);
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)empty->prev);
 
 	free_line(empty);
 }
@@ -264,8 +265,8 @@ MU_TEST(test_str_to_line)
 {
 	char buffer[] = "hello";
 	line_t *non_empty = str_to_line(buffer);
-	mu_check(non_empty != NULL);
-	mu_check(non_empty->data != NULL);
+	mu_assert(non_empty != NULL, "Expected non_empty non-null, found NULL");
+	mu_assert(non_empty->data != NULL, "Expected non_empty->data non-null, found NULL");
 	mu_assert_string_eq(non_empty->data->line_contents, buffer);
 	free_line(non_empty);
 }
@@ -282,26 +283,26 @@ MU_TEST(test_insert_line)
 
 	int status = insert_line(first, third);
 
-	mu_check(status == 0);
-	mu_check(first->next == third);
-	mu_check(third->prev == first);
+	mu_assert_int_eq(0, status);
+	mu_assert_int_eq((uintptr_t)third, (uintptr_t)first->next);
+	mu_assert_int_eq((uintptr_t)first, (uintptr_t)third->prev);
 
 	status = insert_line(first, second);
 
-	mu_check(status == 0);
-	mu_check(first->next == second);
-	mu_check(second->prev == first);
-	mu_check(second->next == third);
-	mu_check(third->prev == second);
+	mu_assert_int_eq(0, status);
+	mu_assert_int_eq((uintptr_t)second, (uintptr_t)first->next);
+	mu_assert_int_eq((uintptr_t)first, (uintptr_t)second->prev);
+	mu_assert_int_eq((uintptr_t)third, (uintptr_t)second->next);
+	mu_assert_int_eq((uintptr_t)second, (uintptr_t)third->prev);
 
 	status = insert_line(first, NULL);
-	mu_check(status != 0);
+	mu_assert_int_eq(-1, status);
 
 	status = insert_line(first, second);
-	mu_check(status != 0);
+	mu_assert_int_eq(-1, status);
 
 	status = insert_line(NULL, second);
-	mu_check(status != 0);
+	mu_assert_int_eq(-1, status);
 
 	free_line(first);
 	free_line(second);
@@ -344,18 +345,18 @@ MU_TEST(test_split_str)
 
 	return_size = 0;
 	test_array = split_str(NULL, '\n', &return_size);
-	mu_check(test_array == NULL);
-	mu_check(return_size == 0);
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)test_array);
+	mu_assert_int_eq(0, return_size);
 
 	return_size = 0;
 	test_array = split_str(buffer3, '\n', NULL);
-	mu_check(test_array == NULL);
-	mu_check(return_size == 0);
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)test_array);
+	mu_assert_int_eq(0, return_size);
 
 	return_size = 0;
 	test_array = split_str("", '\n', &return_size);
-	mu_check(test_array == NULL);
-	mu_check(return_size == 0);
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)test_array);
+	mu_assert_int_eq(0, return_size);
 }
 
 MU_TEST(test_iteratively_free_lines)
@@ -374,29 +375,29 @@ MU_TEST(test_parse_str_to_lines)
 {
 	char buffer[] = "hello";
 	line_t *head = parse_str_to_lines(buffer);
-	mu_check(head != NULL);
-	mu_check(head->prev == NULL);
-	mu_check(head->next == NULL);
+	mu_assert(head != NULL, "Expected head non-null, found NULL");
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)head->prev);
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)head->next);
 	mu_assert_string_eq(buffer, head->data->line_contents);
 	free_line(head);
 
 	char buffer2[] = "hello2\nhello";
 	head = parse_str_to_lines(buffer2);
-	mu_check(head != NULL);
-	mu_check(head->next != NULL);
-	mu_check(head->next->next == NULL);
-	mu_check(head->prev == NULL);
+	mu_assert(head != NULL, "Expected head non-null, found NULL");
+	mu_assert(head->next != NULL, "Expected head->next non-null, found NULL");
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)head->next->next);
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)head->prev);
 	mu_assert_string_eq("hello2", head->data->line_contents);
 	mu_assert_string_eq("hello", head->next->data->line_contents);
 	iteratively_free_lines(head);
 
 	char buffer3[] = "head!\nsecond!\n\nfourth!\n";
 	head = parse_str_to_lines(buffer3);
-	mu_check(head != NULL);
-	mu_check(head->next != NULL);
-	mu_check(head->next->next != NULL);
-	mu_check(head->next->next->next != NULL);
-	mu_check(head->next->next->next->next == NULL);
+	mu_assert(head != NULL, "Expected head non-null, found NULL");
+	mu_assert(head->next != NULL, "Expected head->next non-null, found NULL");
+	mu_assert(head->next->next != NULL, "Expected head->next->next non-null, found NULL");
+	mu_assert(head->next->next->next != NULL, "Expected head->next->next->next non-null, found NULL");
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)head->next->next->next->next);
 
 	mu_assert_string_eq("head!", head->data->line_contents);
 	mu_assert_string_eq("second!", head->next->data->line_contents);
