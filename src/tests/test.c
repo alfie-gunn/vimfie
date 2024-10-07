@@ -3,6 +3,7 @@
 
 #include "minunit.h"
 #include "../file_contents.h"
+#include "../cursor.h"
 
 MU_TEST(test_free_line_data)
 {
@@ -519,10 +520,56 @@ MU_TEST_SUITE(test_line_suite)
 	MU_RUN_TEST(test_write_lines_to_file);
 }
 
+MU_TEST(test_new_cursor)
+{
+	cursor_t *cursor = new_cursor(-1, 10);
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)cursor);
+	cursor = new_cursor(10, -1);
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)cursor);
+
+	cursor = new_cursor(10, 10);
+	mu_assert(cursor != NULL, "Expected cursor non-null, found NULL");
+	mu_assert_int_eq(1, cursor->x);
+	mu_assert_int_eq(1, cursor->y);
+	mu_assert_int_eq(10, cursor->x_bound);
+	mu_assert_int_eq(10, cursor->y_bound);
+
+	free(cursor);
+}
+
+MU_TEST(test_cursor_updates)
+{
+	cursor_t *cursor = new_cursor(20, 20);
+	mu_assert(cursor != NULL, "Expected cursor non-null, found NULL");
+
+	int status = update_x(cursor, 10);
+	mu_assert_int_eq(0, status);
+	mu_assert_int_eq(10, cursor->x);
+
+	status = update_x(cursor, 25);
+	mu_assert_int_eq(-1, status);
+	mu_assert_int_eq(10, cursor->x);
+
+	status = update_y(cursor, 10);
+	mu_assert_int_eq(0, status);
+	mu_assert_int_eq(10, cursor->y);
+
+	status = update_y(cursor, 25);
+	mu_assert_int_eq(-1, status);
+	mu_assert_int_eq(10, cursor->y);
+}
+
+MU_TEST_SUITE(test_cursor_suite)
+{
+	MU_RUN_TEST(test_new_cursor);
+	MU_RUN_TEST(test_cursor_updates);
+}
+
 int main(int argc, char *argv[])
 {
 	MU_RUN_SUITE(test_ld_suite);
 	MU_RUN_SUITE(test_line_suite);
+	MU_RUN_SUITE(test_cursor_suite);
 	MU_REPORT();
 	return MU_EXIT_CODE;
 }

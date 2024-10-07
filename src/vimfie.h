@@ -1,10 +1,10 @@
 #pragma once
 #include "file_contents.h"
-#include "pointer.h"
+#include "cursor.h"
 
 typedef struct
 {
     line_t *contents;
-    pointer_t *cursor;
+    cursor_t *cursor;
     char* command;
 } vimfie_t;
