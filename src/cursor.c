@@ -1,5 +1,8 @@
 #include "cursor.h"
 #include <stdlib.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <stdio.h>
 
 cursor_t *new_cursor(int x_bound, int y_bound)
 {
@@ -11,7 +14,8 @@ cursor_t *new_cursor(int x_bound, int y_bound)
     cursor_t *new_cursor = calloc(1, sizeof(cursor_t));
     if (new_cursor == NULL)
     {
-        return NULL;;
+        return NULL;
+        ;
     }
     new_cursor->x_bound = x_bound;
     new_cursor->y_bound = y_bound;
@@ -39,4 +43,22 @@ int update_y(cursor_t *cursor, int new_y)
     }
     cursor->y = new_y;
     return 0;
+}
+
+void move_cursor(int x, int y)
+{
+    printf("\033[%d;%dH", x, y);
+}
+
+void slide_cursor(int x, int y)
+{
+    printf("\033[%dC\033[%dB", x, y);
+}
+
+cursor_t *new_bounded_cursor()
+{
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+
+    return new_cursor(w.ws_col, w.ws_row);
 }

@@ -11,3 +11,5 @@ typedef struct
 cursor_t *new_cursor(int x_bound, int y_bound);
 int update_x(cursor_t *cursor, int new_x);
 int update_y(cursor_t *cursor, int new_y);
+void move_cursor(int x, int y);
+cursor_t *new_bounded_cursor();
