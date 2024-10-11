@@ -55,6 +55,14 @@ int main(int argc, char **argv)
                 update_x(vf->cursor, vf->cursor->x - 1);
                 display_visible_contents(vf);
             }
+            else if (c == '\r')
+            {
+                line_t *new_line = empty_line();
+                insert_line(vf->current, new_line);
+                update_x(vf->cursor, 1);
+                update_y(vf->cursor, vf->cursor->y + 1);
+                move_cursor(vf->cursor);
+            }
             else
             {
                 insert_char_line_data(vf->current->data, vf->cursor->x-1, c);
