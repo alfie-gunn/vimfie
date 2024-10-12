@@ -35,3 +35,5 @@ line_t *parse_str_to_lines(char *str);
 int write_line(line_t *line, int fd);
 int write_lines_from_head(line_t *line, int fd);
 line_t *parse_file_to_lines(FILE *file);
+int write_lines_to_file(line_t *line, FILE *file);
+void display_n_lines(line_t *line, int n);

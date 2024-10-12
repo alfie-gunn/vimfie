@@ -3,6 +3,8 @@
 
 #include "minunit.h"
 #include "../file_contents.h"
+#include "../cursor.h"
+#include "../vimfie.h"
 
 MU_TEST(test_free_line_data)
 {
@@ -455,6 +457,55 @@ MU_TEST(test_parse_file_to_lines)
 	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)head);
 }
 
+MU_TEST(test_write_lines_to_file)
+{
+	FILE *file = fopen("testfile", "a");
+	mu_assert(file != NULL, "Expected file non-null, found NULL");
+
+	line_t *head = parse_str_to_lines("newline!\nnewline!\n");
+	mu_assert(head != NULL, "Expected head non-null, found NULL");
+
+	int status = write_lines_to_file(head, file);
+	mu_assert_int_eq(0, status);
+
+	iteratively_free_lines(head);
+	fclose(file);
+
+	file = fopen("testfile", "r");
+	mu_assert(file != NULL, "Expected file non-null, found NULL");
+	head = parse_file_to_lines(file);
+	mu_assert(head != NULL, "Expected head non-null, found NULL");
+
+	fclose(file);
+
+	mu_assert(head != NULL, "Expected head non-null, found NULL");
+	mu_assert(head->next != NULL, "Expected head->next non-null, found NULL");
+	mu_assert(head->next->next != NULL, "Expected head->next->next non-null, found NULL");
+	mu_assert(head->next->next->next != NULL, "Expected head->next->next->next non-null, found NULL");
+	mu_assert(head->next->next->next->next != NULL, "Expected head->next->next->next->next non-null, found NULL");
+	mu_assert_string_eq("this is a test file", head->data->line_contents);
+	mu_assert_string_eq("it is used for testing", head->next->data->line_contents);
+	mu_assert_string_eq("do not touch!", head->next->next->data->line_contents);
+	mu_assert_string_eq("newline!", head->next->next->next->data->line_contents);
+	mu_assert_string_eq("newline!", head->next->next->next->next->data->line_contents);
+
+	iteratively_free_lines(head);
+
+	fopen("testfile", "w");
+	mu_assert(file != NULL, "Expected file non-null, found NULL");
+
+	head = parse_str_to_lines("this is a test file\nit is used for testing\ndo not touch!\n");
+	mu_assert(head != NULL, "Expected head non-null, found NULL");
+
+
+	status = write_lines_to_file(head, file);
+	mu_assert_int_eq(0, status);
+
+	fclose(file);
+
+	iteratively_free_lines(head);
+}
+
 MU_TEST_SUITE(test_line_suite)
 {
 	MU_RUN_TEST(test_free_line);
@@ -467,12 +518,84 @@ MU_TEST_SUITE(test_line_suite)
 	MU_RUN_TEST(test_write_line);
 	MU_RUN_TEST(test_write_lines_from_head);
 	MU_RUN_TEST(test_parse_file_to_lines);
+	MU_RUN_TEST(test_write_lines_to_file);
+}
+
+MU_TEST(test_new_cursor)
+{
+	cursor_t *cursor = new_cursor(-1, 10);
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)cursor);
+	cursor = new_cursor(10, -1);
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)cursor);
+
+	cursor = new_cursor(10, 10);
+	mu_assert(cursor != NULL, "Expected cursor non-null, found NULL");
+	mu_assert_int_eq(1, cursor->x);
+	mu_assert_int_eq(1, cursor->y);
+	mu_assert_int_eq(10, cursor->x_bound);
+	mu_assert_int_eq(10, cursor->y_bound);
+
+	free(cursor);
+}
+
+MU_TEST(test_cursor_updates)
+{
+	cursor_t *cursor = new_cursor(20, 20);
+	mu_assert(cursor != NULL, "Expected cursor non-null, found NULL");
+
+	int status = update_x(cursor, 10);
+	mu_assert_int_eq(0, status);
+	mu_assert_int_eq(10, cursor->x);
+
+	status = update_x(cursor, 25);
+	mu_assert_int_eq(-1, status);
+	mu_assert_int_eq(20, cursor->x);
+
+	status = update_y(cursor, 10);
+	mu_assert_int_eq(0, status);
+	mu_assert_int_eq(10, cursor->y);
+
+	status = update_y(cursor, 25);
+	mu_assert_int_eq(-1, status);
+	mu_assert_int_eq(10, cursor->y);
+}
+
+MU_TEST_SUITE(test_cursor_suite)
+{
+	MU_RUN_TEST(test_new_cursor);
+	MU_RUN_TEST(test_cursor_updates);
+}
+
+MU_TEST(test_new_vimfie)
+{
+	vimfie_t *vf = new_vimfie(NULL);
+	mu_assert(vf != NULL, "Expected vf non-null, found NULL");
+	mu_assert(vf->command != NULL, "Expected vf->command non-null, found NULL");
+	mu_assert(vf->cursor != NULL, "Expected vf->cursor non-null, found NULL");
+	mu_assert(vf->head != NULL, "Expected vf->cursor non-null, found NULL");
+	mu_assert_int_eq((uintptr_t)NULL, (uintptr_t)vf->filename);
+	free_vimfie(vf);
+
+	vf = new_vimfie("testfile");
+	mu_assert(vf != NULL, "Expected vf non-null, found NULL");
+	mu_assert(vf->command != NULL, "Expected vf->command non-null, found NULL");
+	mu_assert(vf->cursor != NULL, "Expected vf->cursor non-null, found NULL");
+	mu_assert(vf->head != NULL, "Expected vf->cursor non-null, found NULL");
+	mu_assert_string_eq("testfile", vf->filename);
+	free_vimfie(vf);
+}
+
+MU_TEST_SUITE(test_vf_suite)
+{
+	MU_RUN_TEST(test_new_vimfie);
 }
 
 int main(int argc, char *argv[])
 {
 	MU_RUN_SUITE(test_ld_suite);
 	MU_RUN_SUITE(test_line_suite);
+	MU_RUN_SUITE(test_cursor_suite);
+	MU_RUN_SUITE(test_vf_suite);
 	MU_REPORT();
 	return MU_EXIT_CODE;
 }
